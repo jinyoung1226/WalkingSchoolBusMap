@@ -15,17 +15,12 @@
     <script>
       var map, guideMarker;
 
-      // 가상의 초기 인솔자 위치
-      var initialLat = 33.450701;
-      var initialLng = 126.570667;
-
       // URL의 쿼리 파라미터에서 경유지 데이터를 가져오는 함수
       function getWaypointsFromQuery() {
         const params = new URLSearchParams(window.location.search);
         const waypointsParam = params.get("waypoints");
 
         try {
-          // 쿼리 파라미터에서 받은 경유지 데이터를 파싱
           return JSON.parse(decodeURIComponent(waypointsParam));
         } catch (error) {
           console.error("경유지 데이터를 파싱하는 중 오류 발생:", error);
@@ -33,19 +28,20 @@
         }
       }
 
-      // 초기 위치로 지도를 설정하는 함수
+      // 지도 초기화 함수
       function initializeMap(waypoints) {
-        var initialPosition = new kakao.maps.LatLng(initialLat, initialLng);
+        // 최초 인솔자 위치가 없을 경우 사용할 기본 위치
+        var initialPosition = new kakao.maps.LatLng(37.277, 127.038);
 
-        // 지도를 생성하고 가상의 초기 위치를 중심으로 설정
+        // 지도 생성
         map = new kakao.maps.Map(document.getElementById("map"), {
-          center: initialPosition, // 가상의 초기 위치
-          level: 3, // 확대 레벨
+          center: initialPosition,
+          level: 2,
         });
 
-        // 경유지 마커를 지도에 고정적으로 표시
+        // 경유지 마커 표시
         waypoints.forEach(function (waypoint) {
-          var marker = new kakao.maps.Marker({
+          new kakao.maps.Marker({
             map: map,
             position: new kakao.maps.LatLng(
               waypoint.latitude,
@@ -59,10 +55,10 @@
           });
         });
 
-        // 인솔자 위치를 표시하는 마커 (초기 위치는 가상의 초기 위치)
+        // 인솔자 위치 표시 마커 (초기 위치는 기본값)
         guideMarker = new kakao.maps.Marker({
           map: map,
-          position: initialPosition, // 초기 위치
+          position: initialPosition,
           title: "인솔자 위치",
           image: new kakao.maps.MarkerImage(
             "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png",
@@ -71,25 +67,24 @@
         });
       }
 
-      // 인솔자 위치를 갱신하는 함수
+      // 인솔자 위치 갱신 함수
       function updateGuidePosition(newLat, newLng) {
         var newPosition = new kakao.maps.LatLng(newLat, newLng);
-        guideMarker.setPosition(newPosition); // 인솔자 마커 위치를 갱신
-        map.setCenter(newPosition); // 필요시 지도 중심도 이동
+        guideMarker.setPosition(newPosition); // 인솔자 마커 위치 갱신
+        map.setCenter(newPosition); // 지도 중심 갱신
       }
 
-      // 경유지 데이터를 쿼리 파라미터로부터 가져옴
+      // 경유지 데이터를 URL 파라미터에서 가져옴
       var waypoints = getWaypointsFromQuery();
 
-      // 초기화 함수 실행
+      // 지도 초기화
       initializeMap(waypoints);
 
-      // 1초 후 가상의 새로운 위치 데이터로 마커 업데이트
-      setTimeout(function () {
-        var newLat = 33.452393; // 가상의 새로운 위도
-        var newLng = 126.571738; // 가상의 새로운 경도
-        updateGuidePosition(newLat, newLng); // 마커 업데이트
-      }, 1000);
+      // React Native에서 인솔자 위치 수신
+      window.addEventListener("message", function (event) {
+        const data = JSON.parse(event.data);
+        updateGuidePosition(data.latitude, data.longitude); // 인솔자 위치 갱신
+      });
     </script>
   </body>
 </html>
