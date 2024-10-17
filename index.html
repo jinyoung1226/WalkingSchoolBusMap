@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>워킹스쿨버스 운행 지도</title>
+    <script
+      type="text/javascript"
+      src="//dapi.kakao.com/v2/maps/sdk.js?appkey=783823781317f359b71a726bd9318357"
+    ></script>
+  </head>
+  <body>
+    <div id="map" style="width: 100%; height: 500px"></div>
+
+    <script>
+      var map, guideMarker;
+
+      // 가상의 초기 인솔자 위치
+      var initialLat = 33.450701;
+      var initialLng = 126.570667;
+
+      // 경유지 위치 배열
+      var positions = [
+        {
+          title: "카카오",
+          latlng: new kakao.maps.LatLng(33.450705, 126.570677),
+        },
+        {
+          title: "생태연못",
+          latlng: new kakao.maps.LatLng(33.450936, 126.569477),
+        },
+        { title: "텃밭", latlng: new kakao.maps.LatLng(33.450879, 126.56994) },
+        {
+          title: "근린공원",
+          latlng: new kakao.maps.LatLng(33.451393, 126.570738),
+        },
+      ];
+
+      // 초기 위치로 지도를 설정하는 함수
+      function initializeMap() {
+        var initialPosition = new kakao.maps.LatLng(initialLat, initialLng);
+
+        // 지도를 생성하고 가상의 초기 위치를 중심으로 설정
+        map = new kakao.maps.Map(document.getElementById("map"), {
+          center: initialPosition, // 가상의 초기 위치
+          level: 3, // 확대 레벨
+        });
+
+        // 경유지 마커를 지도에 고정적으로 표시
+        for (var i = 0; i < positions.length; i++) {
+          var marker = new kakao.maps.Marker({
+            map: map,
+            position: positions[i].latlng,
+            title: positions[i].title,
+            image: new kakao.maps.MarkerImage(
+              "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png",
+              new kakao.maps.Size(24, 35)
+            ),
+          });
+        }
+
+        // 인솔자 위치를 표시하는 마커 (초기 위치는 가상의 초기 위치)
+        guideMarker = new kakao.maps.Marker({
+          map: map,
+          position: initialPosition, // 초기 위치
+          title: "인솔자 위치",
+          image: new kakao.maps.MarkerImage(
+            "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png",
+            new kakao.maps.Size(24, 35)
+          ),
+        });
+      }
+
+      // 인솔자 위치를 갱신하는 함수
+      function updateGuidePosition(newLat, newLng) {
+        var newPosition = new kakao.maps.LatLng(newLat, newLng);
+        guideMarker.setPosition(newPosition); // 인솔자 마커 위치를 갱신
+        map.setCenter(newPosition); // 필요시 지도 중심도 이동
+      }
+
+      // 초기화 함수 실행
+      initializeMap();
+
+      // 1초 후 가상의 새로운 위치 데이터로 마커 업데이트
+      setTimeout(function () {
+        var newLat = 33.452393; // 가상의 새로운 위도
+        var newLng = 126.571738; // 가상의 새로운 경도
+        updateGuidePosition(newLat, newLng); // 마커 업데이트
+      }, 1000);
+    </script>
+  </body>
+</html>
