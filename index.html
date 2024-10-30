@@ -14,8 +14,8 @@
 
     <script>
       var map, guideMarker;
+      var isMapInitialized = false;
 
-      // URL의 쿼리 파라미터에서 경유지 및 초기 위치 데이터를 가져오는 함수
       function getParamsFromQuery() {
         const params = new URLSearchParams(window.location.search);
         const waypointsParam = params.get("waypoints");
@@ -31,22 +31,16 @@
         }
       }
 
-      // 지도 초기화 함수
       function initializeMap(initialPosition, waypoints) {
-        // 지도 생성
         map = new kakao.maps.Map(document.getElementById("map"), {
           center: initialPosition,
           level: 2,
         });
 
-        // 경유지 마커 표시
         waypoints.forEach(function (waypoint) {
           new kakao.maps.Marker({
             map: map,
-            position: new kakao.maps.LatLng(
-              waypoint.latitude,
-              waypoint.longitude
-            ),
+            position: new kakao.maps.LatLng(waypoint.latitude, waypoint.longitude),
             title: waypoint.waypointName,
             image: new kakao.maps.MarkerImage(
               "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png",
@@ -55,7 +49,6 @@
           });
         });
 
-        // 인솔자 위치 표시 마커 (초기 위치 설정)
         guideMarker = new kakao.maps.Marker({
           map: map,
           position: initialPosition,
@@ -67,12 +60,22 @@
         });
       }
 
-      // 경유지 및 초기 위치 데이터 가져오기
+      function updateGuidePosition(newLat, newLng) {
+        const newPosition = new kakao.maps.LatLng(newLat, newLng);
+        guideMarker.setPosition(newPosition);
+        map.setCenter(newPosition);
+      }
+
       const { waypoints, initialLocation } = getParamsFromQuery();
       const initialPosition = new kakao.maps.LatLng(initialLocation.latitude, initialLocation.longitude);
 
-      // 지도 초기화
       initializeMap(initialPosition, waypoints);
+
+      window.addEventListener("message", function (event) {
+        const data = JSON.parse(event.data);
+        updateGuidePosition(data.latitude, data.longitude);
+        console.log("인솔자 위치 업데이트:", data.latitude, data.longitude);
+      });
     </script>
   </body>
 </html>
