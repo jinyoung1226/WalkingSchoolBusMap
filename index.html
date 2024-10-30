@@ -84,6 +84,7 @@
       window.addEventListener("message", function (event) {
         const data = JSON.parse(event.data);
         updateGuidePosition(data.latitude, data.longitude); // 인솔자 위치 갱신
+        console.log(data.latitude, data.longitude);
       });
     </script>
   </body>
