@@ -6,7 +6,7 @@
     <title>워킹스쿨버스 운행 지도</title>
     <script
       type="text/javascript"
-      src="//dapi.kakao.com/v2/maps/sdk.js?appkey=783823781317f359b71a726bd9318357"
+      src="//dapi.kakao.com/v2/maps/sdk.js?appkey=YOUR_KAKAO_MAP_APPKEY"
     ></script>
   </head>
   <body>
@@ -14,7 +14,7 @@
 
     <script>
       var map, guideMarker;
-      var isFirstPosition = true; // 초기 위치 설정 여부
+      var isMapInitialized = false; // 지도 초기화 여부
 
       // URL의 쿼리 파라미터에서 경유지 데이터를 가져오는 함수
       function getWaypointsFromQuery() {
@@ -34,7 +34,7 @@
         // 지도 생성
         map = new kakao.maps.Map(document.getElementById("map"), {
           center: initialPosition,
-          level: 2,
+          level: 3,
         });
 
         // 경유지 마커 표시
@@ -59,8 +59,8 @@
           position: initialPosition,
           title: "인솔자 위치",
           image: new kakao.maps.MarkerImage(
-            "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png",
-            new kakao.maps.Size(24, 35)
+            "https://img.icons8.com/emoji/48/000000/red-circle-emoji.png",
+            new kakao.maps.Size(24, 24)
           ),
         });
       }
@@ -69,18 +69,17 @@
       function updateGuidePosition(newLat, newLng) {
         var newPosition = new kakao.maps.LatLng(newLat, newLng);
 
-        // 첫 위치 설정 시 지도 초기화
-        if (isFirstPosition) {
+        // 지도가 초기화되지 않은 경우 초기화
+        if (!isMapInitialized) {
+          var waypoints = getWaypointsFromQuery();
           initializeMap(newPosition, waypoints);
-          isFirstPosition = false; // 초기화 완료 후 플래그 변경
+          isMapInitialized = true;
         } else {
+          // 지도와 마커 업데이트
           guideMarker.setPosition(newPosition); // 인솔자 마커 위치 갱신
           map.setCenter(newPosition); // 지도 중심 갱신
         }
       }
-
-      // 경유지 데이터를 URL 파라미터에서 가져옴
-      var waypoints = getWaypointsFromQuery();
 
       // React Native에서 인솔자 위치 수신
       window.addEventListener("message", function (event) {
