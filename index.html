@@ -6,7 +6,7 @@
     <title>워킹스쿨버스 운행 지도</title>
     <script
       type="text/javascript"
-      src="//dapi.kakao.com/v2/maps/sdk.js?appkey=YOUR_KAKAO_MAP_APPKEY"
+      src="//dapi.kakao.com/v2/maps/sdk.js?appkey=783823781317f359b71a726bd9318357"
     ></script>
   </head>
   <body>
@@ -14,7 +14,6 @@
 
     <script>
       var map, guideMarker;
-      var isMapInitialized = false; // 지도 초기화 여부
 
       // URL의 쿼리 파라미터에서 경유지 데이터를 가져오는 함수
       function getWaypointsFromQuery() {
@@ -30,11 +29,14 @@
       }
 
       // 지도 초기화 함수
-      function initializeMap(initialPosition, waypoints) {
+      function initializeMap(waypoints) {
+        // 최초 인솔자 위치가 없을 경우 사용할 기본 위치
+        var initialPosition = new kakao.maps.LatLng(37.277, 127.038);
+
         // 지도 생성
         map = new kakao.maps.Map(document.getElementById("map"), {
           center: initialPosition,
-          level: 3,
+          level: 2,
         });
 
         // 경유지 마커 표시
@@ -53,14 +55,14 @@
           });
         });
 
-        // 인솔자 위치 표시 마커 (초기 위치 설정)
+        // 인솔자 위치 표시 마커 (초기 위치는 기본값)
         guideMarker = new kakao.maps.Marker({
           map: map,
           position: initialPosition,
           title: "인솔자 위치",
           image: new kakao.maps.MarkerImage(
-            "https://img.icons8.com/emoji/48/000000/red-circle-emoji.png",
-            new kakao.maps.Size(24, 24)
+            "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png",
+            new kakao.maps.Size(24, 35)
           ),
         });
       }
@@ -68,18 +70,15 @@
       // 인솔자 위치 갱신 함수
       function updateGuidePosition(newLat, newLng) {
         var newPosition = new kakao.maps.LatLng(newLat, newLng);
-
-        // 지도가 초기화되지 않은 경우 초기화
-        if (!isMapInitialized) {
-          var waypoints = getWaypointsFromQuery();
-          initializeMap(newPosition, waypoints);
-          isMapInitialized = true;
-        } else {
-          // 지도와 마커 업데이트
-          guideMarker.setPosition(newPosition); // 인솔자 마커 위치 갱신
-          map.setCenter(newPosition); // 지도 중심 갱신
-        }
+        guideMarker.setPosition(newPosition); // 인솔자 마커 위치 갱신
+        map.setCenter(newPosition); // 지도 중심 갱신
       }
+
+      // 경유지 데이터를 URL 파라미터에서 가져옴
+      var waypoints = getWaypointsFromQuery();
+
+      // 지도 초기화
+      initializeMap(waypoints);
 
       // React Native에서 인솔자 위치 수신
       window.addEventListener("message", function (event) {
