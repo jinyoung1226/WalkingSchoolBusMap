@@ -14,6 +14,7 @@
 
     <script>
       var map, guideMarker;
+      var isFirstPosition = true; // 초기 위치 설정 여부
 
       // URL의 쿼리 파라미터에서 경유지 데이터를 가져오는 함수
       function getWaypointsFromQuery() {
@@ -29,10 +30,7 @@
       }
 
       // 지도 초기화 함수
-      function initializeMap(waypoints) {
-        // 최초 인솔자 위치가 없을 경우 사용할 기본 위치
-        var initialPosition = new kakao.maps.LatLng(37.277, 127.038);
-
+      function initializeMap(initialPosition, waypoints) {
         // 지도 생성
         map = new kakao.maps.Map(document.getElementById("map"), {
           center: initialPosition,
@@ -55,7 +53,7 @@
           });
         });
 
-        // 인솔자 위치 표시 마커 (초기 위치는 기본값)
+        // 인솔자 위치 표시 마커 (초기 위치 설정)
         guideMarker = new kakao.maps.Marker({
           map: map,
           position: initialPosition,
@@ -70,15 +68,19 @@
       // 인솔자 위치 갱신 함수
       function updateGuidePosition(newLat, newLng) {
         var newPosition = new kakao.maps.LatLng(newLat, newLng);
-        guideMarker.setPosition(newPosition); // 인솔자 마커 위치 갱신
-        map.setCenter(newPosition); // 지도 중심 갱신
+
+        // 첫 위치 설정 시 지도 초기화
+        if (isFirstPosition) {
+          initializeMap(newPosition, waypoints);
+          isFirstPosition = false; // 초기화 완료 후 플래그 변경
+        } else {
+          guideMarker.setPosition(newPosition); // 인솔자 마커 위치 갱신
+          map.setCenter(newPosition); // 지도 중심 갱신
+        }
       }
 
       // 경유지 데이터를 URL 파라미터에서 가져옴
       var waypoints = getWaypointsFromQuery();
-
-      // 지도 초기화
-      initializeMap(waypoints);
 
       // React Native에서 인솔자 위치 수신
       window.addEventListener("message", function (event) {
