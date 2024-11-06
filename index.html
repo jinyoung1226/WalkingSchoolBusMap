@@ -37,13 +37,18 @@
           level: 2,
         });
 
-        waypoints.forEach(function (waypoint) {
+        waypoints.forEach(function (waypoint, index) {
+          const isLastWaypoint = index === waypoints.length - 1;
+          const markerImageSrc = isLastWaypoint
+            ? "./icon/destination.png"
+            : "./icon/waypointInStudent.png";
+
           new kakao.maps.Marker({
             map: map,
             position: new kakao.maps.LatLng(waypoint.latitude, waypoint.longitude),
             title: waypoint.waypointName,
             image: new kakao.maps.MarkerImage(
-              "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png",
+              markerImageSrc,
               new kakao.maps.Size(24, 35)
             ),
           });
@@ -54,7 +59,7 @@
           position: initialPosition,
           title: "현재 위치",
           image: new kakao.maps.MarkerImage(
-            "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png",
+            "./icon/guideMarker.png",
             new kakao.maps.Size(24, 35)
           ),
         });
