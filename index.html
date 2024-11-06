@@ -13,14 +13,14 @@
     <div id="map" style="width: 100%; height: 700px"></div>
 
     <script>
-      var map, guideMarker;
+      var map, guideMarkerEl, guideMarkerOverlay;
       var isMapInitialized = false;
-
+    
       function getParamsFromQuery() {
         const params = new URLSearchParams(window.location.search);
         const waypointsParam = params.get("waypoints");
         const initialLocationParam = params.get("initialLocation");
-
+    
         try {
           const waypoints = JSON.parse(decodeURIComponent(waypointsParam));
           const initialLocation = JSON.parse(decodeURIComponent(initialLocationParam));
@@ -30,22 +30,22 @@
           return { waypoints: [], initialLocation: { latitude: 37.277, longitude: 127.038 } };
         }
       }
-
+    
       function initializeMap(initialPosition, waypoints) {
         map = new kakao.maps.Map(document.getElementById("map"), {
           center: initialPosition,
           level: 4,
         });
-
+    
         waypoints.forEach(function (waypoint, index) {
           const isLastWaypoint = index === waypoints.length - 1;
           const markerImageSrc = isLastWaypoint
             ? "./icon/destination.png"
             : "./icon/waypointInStudent.png";
           const markerImageSize = isLastWaypoint
-            ? new kakao.maps.Size(31, 37) // 마지막 경유지의 이미지 크기
-            : new kakao.maps.Size(37.24, 46); // 마지막이 아닌 경유지의 이미지 크기
-
+            ? new kakao.maps.Size(31, 37)
+            : new kakao.maps.Size(37.24, 46);
+    
           new kakao.maps.Marker({
             map: map,
             position: new kakao.maps.LatLng(waypoint.latitude, waypoint.longitude),
@@ -53,33 +53,57 @@
             image: new kakao.maps.MarkerImage(markerImageSrc, markerImageSize),
           });
         });
-
-        guideMarker = new kakao.maps.Marker({
+    
+        // 가이드 마커를 HTML 엘리먼트로 생성
+        guideMarkerEl = document.createElement("div");
+        guideMarkerEl.style.width = "40px";
+        guideMarkerEl.style.height = "40px";
+        guideMarkerEl.style.backgroundImage = "url('./icon/guideMarker.png')";
+        guideMarkerEl.style.backgroundSize = "cover";
+        guideMarkerEl.style.transformOrigin = "center";
+        guideMarkerEl.style.transition = "transform 0.1s linear";
+    
+        guideMarkerOverlay = new kakao.maps.CustomOverlay({
           map: map,
           position: initialPosition,
-          title: "현재 위치",
-          image: new kakao.maps.MarkerImage(
-            "./icon/guideMarker.png",
-            new kakao.maps.Size(40, 40) // 가이드 마커의 이미지 크기
-          ),
+          content: guideMarkerEl,
+          yAnchor: 0.5,
+          xAnchor: 0.5,
         });
       }
-
+    
       function updateGuidePosition(newLat, newLng) {
         const newPosition = new kakao.maps.LatLng(newLat, newLng);
-        guideMarker.setPosition(newPosition);
+        guideMarkerOverlay.setPosition(newPosition);
         map.setCenter(newPosition);
       }
-
+    
+      function updateGuideRotation(rotation) {
+        guideMarkerEl.style.transform = `rotate(${rotation}deg)`;
+      }
+    
       const { waypoints, initialLocation } = getParamsFromQuery();
       const initialPosition = new kakao.maps.LatLng(initialLocation.latitude, initialLocation.longitude);
-
+    
       initializeMap(initialPosition, waypoints);
-
+    
       window.addEventListener("message", function (event) {
-        const data = JSON.parse(event.data);
-        updateGuidePosition(data.latitude, data.longitude);
-        console.log("인솔자 위치 업데이트:", data.latitude, data.longitude);
+        try {
+            const data = JSON.parse(event.data);
+            
+            if (data.latitude !== undefined && data.longitude !== undefined) {
+                updateGuidePosition(data.latitude, data.longitude);
+                console.log("인솔자 위치 업데이트:", data.latitude, data.longitude);
+            }
+            
+            if (data.rotation !== undefined) {
+                updateGuideRotation(data.rotation);
+                console.log("마커 회전 업데이트:", data.rotation);
+            }
+            
+        } catch (error) {
+            console.error("메시지 처리 중 오류 발생:", error);
+        }
       });
     </script>
   </body>
