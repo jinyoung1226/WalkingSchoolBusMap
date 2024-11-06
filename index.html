@@ -14,7 +14,6 @@
 
     <script>
       var map, guideMarkerEl, guideMarkerOverlay;
-      var isMapInitialized = false;
     
       function getParamsFromQuery() {
         const params = new URLSearchParams(window.location.search);
@@ -89,20 +88,19 @@
     
       window.addEventListener("message", function (event) {
         try {
-            const data = JSON.parse(event.data);
-            
-            if (data.latitude !== undefined && data.longitude !== undefined) {
-                updateGuidePosition(data.latitude, data.longitude);
-                console.log("인솔자 위치 업데이트:", data.latitude, data.longitude);
-            }
-            
-            if (data.rotation !== undefined) {
-                updateGuideRotation(data.rotation);
-                console.log("마커 회전 업데이트:", data.rotation);
-            }
-            
+          const data = JSON.parse(event.data);
+    
+          if (data.latitude !== undefined && data.longitude !== undefined) {
+            updateGuidePosition(data.latitude, data.longitude);
+            console.log("인솔자 위치 업데이트:", data.latitude, data.longitude);
+          }
+    
+          if (data.rotation !== undefined) {
+            updateGuideRotation(data.rotation);
+            console.log("마커 회전 업데이트:", data.rotation);
+          }
         } catch (error) {
-            console.error("메시지 처리 중 오류 발생:", error);
+          console.error("메시지 처리 중 오류 발생:", error);
         }
       });
     </script>
