@@ -70,15 +70,33 @@
         guideMarker.setPosition(newPosition);
       }
 
+      function centerMapOnGuide() {
+        const guidePosition = guideMarker.getPosition();
+        map.setCenter(guidePosition);
+      }
+
       const { waypoints, initialLocation } = getParamsFromQuery();
       const initialPosition = new kakao.maps.LatLng(initialLocation.latitude, initialLocation.longitude);
 
       initializeMap(initialPosition, waypoints);
 
+      // React Native로부터 메시지를 수신하여 처리
       window.addEventListener("message", function (event) {
-        const data = JSON.parse(event.data);
-        updateGuidePosition(data.latitude, data.longitude);
-        console.log("인솔자 위치 업데이트:", data.latitude, data.longitude);
+        try {
+          const data = JSON.parse(event.data);
+
+          if (data.latitude !== undefined && data.longitude !== undefined) {
+            updateGuidePosition(data.latitude, data.longitude);
+            console.log("인솔자 위치 업데이트:", data.latitude, data.longitude);
+          }
+
+          // 'centerMapOnGuide' 액션 처리
+          if (data.action === "centerMapOnGuide") {
+            centerMapOnGuide();
+          }
+        } catch (error) {
+          console.error("메시지 처리 중 오류 발생:", error);
+        }
       });
     </script>
   </body>
