@@ -68,7 +68,6 @@
       function updateGuidePosition(newLat, newLng) {
         const newPosition = new kakao.maps.LatLng(newLat, newLng);
         guideMarker.setPosition(newPosition);
-        map.setCenter(newPosition);
       }
 
       const { waypoints, initialLocation } = getParamsFromQuery();
