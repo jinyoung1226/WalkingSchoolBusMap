@@ -72,7 +72,7 @@
 
       function centerMapOnGuide() {
         const guidePosition = guideMarker.getPosition();
-        map.setCenter(guidePosition);
+        map.panTo(guidePosition);
       }
 
       const { waypoints, initialLocation } = getParamsFromQuery();
