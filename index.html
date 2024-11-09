@@ -102,6 +102,25 @@
           console.error("메시지 처리 중 오류 발생:", error);
         }
       });
+
+      // React Native로부터 메시지를 수신하여 처리
+      document.addEventListener("message", function (event) {
+        try {
+          const data = JSON.parse(event.data);
+
+          if (data.latitude !== undefined && data.longitude !== undefined) {
+            updateGuidePosition(data.latitude, data.longitude);
+            console.log("인솔자 위치 업데이트:", data.latitude, data.longitude);
+          }
+
+          // 'centerMapOnGuide' 액션 처리
+          if (data.action === "centerMapOnGuide") {
+            centerMapOnGuide();
+          }
+        } catch (error) {
+          console.error("메시지 처리 중 오류 발생:", error);
+        }
+      });
     </script>
   </body>
 </html>
