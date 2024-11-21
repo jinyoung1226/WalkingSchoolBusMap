@@ -29,9 +29,9 @@
     <div id="map"></div>
 
     <script>
-      let map, guideMarker;
+      var map, guideMarker;
+      var isMapInitialized = false;
 
-      // 쿼리 파라미터로부터 경유지와 초기 위치를 추출
       function getParamsFromQuery() {
         const params = new URLSearchParams(window.location.search);
         const waypointsParam = params.get("waypoints");
@@ -39,30 +39,19 @@
 
         try {
           const waypoints = JSON.parse(decodeURIComponent(waypointsParam));
-          const initialLocation = JSON.parse(
-            decodeURIComponent(initialLocationParam)
-          );
+          const initialLocation = JSON.parse(decodeURIComponent(initialLocationParam));
           return { waypoints, initialLocation };
         } catch (error) {
           console.error("경유지 또는 초기 위치 데이터를 파싱하는 중 오류 발생:", error);
-          return {
-            waypoints: [],
-            initialLocation: { latitude: 37.277, longitude: 127.038 },
-          };
+          return { waypoints: [], initialLocation: { latitude: 37.277, longitude: 127.038 } };
         }
       }
 
-      // 지도 초기화 함수
       function initializeMap(initialPosition, waypoints) {
-        const mapContainer = document.getElementById("map");
-
-        map = new kakao.maps.Map(mapContainer, {
+        map = new kakao.maps.Map(document.getElementById("map"), {
           center: initialPosition,
           level: 4,
         });
-
-        // 중심 좌표를 명확히 설정
-        map.setCenter(initialPosition);
 
         waypoints.forEach(function (waypoint, index) {
           const isLastWaypoint = index === waypoints.length - 1;
@@ -75,10 +64,7 @@
 
           new kakao.maps.Marker({
             map: map,
-            position: new kakao.maps.LatLng(
-              waypoint.latitude,
-              waypoint.longitude
-            ),
+            position: new kakao.maps.LatLng(waypoint.latitude, waypoint.longitude),
             title: waypoint.waypointName,
             image: new kakao.maps.MarkerImage(markerImageSrc, markerImageSize),
           });
@@ -95,31 +81,24 @@
         });
       }
 
-      // 가이드 위치 업데이트 함수
       function updateGuidePosition(newLat, newLng) {
         const newPosition = new kakao.maps.LatLng(newLat, newLng);
         guideMarker.setPosition(newPosition);
       }
 
-      // 지도 중심을 가이드 위치로 이동
       function centerMapOnGuide() {
         const guidePosition = guideMarker.getPosition();
-        map.setCenter(guidePosition);
+        map.panTo(guidePosition, {
+          animate: {
+            duration: 550, 
+          }
+        });
       }
 
-      // 지도 초기화 보장
-      window.addEventListener("load", () => {
-        const { waypoints, initialLocation } = getParamsFromQuery();
-        const initialPosition = new kakao.maps.LatLng(
-          initialLocation.latitude,
-          initialLocation.longitude
-        );
+      const { waypoints, initialLocation } = getParamsFromQuery();
+      const initialPosition = new kakao.maps.LatLng(initialLocation.latitude, initialLocation.longitude);
 
-        // 약간의 지연을 두고 지도 초기화
-        setTimeout(() => {
-          initializeMap(initialPosition, waypoints);
-        }, 100); // 100ms 지연
-      });
+      initializeMap(initialPosition, waypoints);
 
       // React Native로부터 메시지를 수신하여 처리
       window.addEventListener("message", function (event) {
@@ -131,6 +110,7 @@
             console.log("인솔자 위치 업데이트:", data.latitude, data.longitude);
           }
 
+          // 'centerMapOnGuide' 액션 처리
           if (data.action === "centerMapOnGuide") {
             centerMapOnGuide();
           }
@@ -139,7 +119,7 @@
         }
       });
 
-      // React Native로부터 메시지를 수신하여 처리 (iOS 호환)
+      // React Native로부터 메시지를 수신하여 처리
       document.addEventListener("message", function (event) {
         try {
           const data = JSON.parse(event.data);
@@ -149,6 +129,7 @@
             console.log("인솔자 위치 업데이트:", data.latitude, data.longitude);
           }
 
+          // 'centerMapOnGuide' 액션 처리
           if (data.action === "centerMapOnGuide") {
             centerMapOnGuide();
           }
